@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.36">
+  <POU Name="StopWatch" Id="{b81aae1c-6287-4d02-9e37-f78723737372}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK StopWatch
+VAR_INPUT
+	///RISING EDGE Starts, FALLING EDGE Stops
+	START: BOOL;
+	///Resets the timekeeping. Stops & Reset if already running
+	RESET: BOOL;
+END_VAR
+VAR_OUTPUT
+	Elapsed_Time: TIME;
+END_VAR
+VAR
+	{attribute 'hide' := ''}
+	Time_Count: UDINT;
+	{attribute 'hide' := ''}
+	Current_CycleTime: UDINT;
+	{attribute 'hide' := ''}
+	COUNT_TIME: BOOL := FALSE;
+	{attribute 'hide' := ''}
+	fbStart_R: R_TRIG;
+	{attribute 'hide' := ''}
+	fbStart_F: F_TRIG;
+	{attribute 'hide' := ''}
+	fbReset_R: R_TRIG;
+	{attribute 'hide' := ''}
+	fbReset_F: F_TRIG;
+	{attribute 'hide' := ''}
+	fbGetTaskIndex: GETCURTASKINDEX;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbStart_R(CLK:=START);
+fbStart_F(CLK:=START);
+fbReset_R(CLK:=RESET);
+fbReset_F(CLK:=RESET);
+
+IF fbStart_R.Q THEN
+	fbGetTaskIndex();
+	COUNT_TIME := TRUE;
+	Current_CycleTime := _TaskInfo[fbGetTaskIndex.index].CycleTime (*100ns unit*);
+END_IF
+IF fbStart_F.Q OR fbReset_R.Q THEN
+	COUNT_TIME := FALSE;
+END_IF
+IF fbReset_R.Q THEN
+	Time_Count := 0;
+	Elapsed_Time := T#0MS;
+END_IF
+
+IF COUNT_TIME THEN
+	Time_Count := Time_Count + Current_CycleTime;
+	IF Time_Count > 10000 THEN		
+		Elapsed_Time := Elapsed_Time + UDINT_TO_TIME(Time_Count/10000);
+		Time_Count := 0;
+	END_IF
+END_IF]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
