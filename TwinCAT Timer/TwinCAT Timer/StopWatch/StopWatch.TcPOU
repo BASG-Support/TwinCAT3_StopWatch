@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.36">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.5">
   <POU Name="StopWatch" Id="{b81aae1c-6287-4d02-9e37-f78723737372}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK StopWatch
 VAR_INPUT
@@ -39,7 +39,7 @@ fbReset_F(CLK:=RESET);
 IF fbStart_R.Q THEN
 	fbGetTaskIndex();
 	COUNT_TIME := TRUE;
-	Current_CycleTime := _TaskInfo[fbGetTaskIndex.index].CycleTime (*100ns unit*);
+	Current_CycleTime := TwinCAT_SystemInfoVarList._TaskInfo[fbGetTaskIndex.index].CycleTime (*100ns unit*);
 END_IF
 IF fbStart_F.Q OR fbReset_R.Q THEN
 	COUNT_TIME := FALSE;
@@ -57,5 +57,9 @@ IF COUNT_TIME THEN
 	END_IF
 END_IF]]></ST>
     </Implementation>
+    <LineIds Name="StopWatch">
+      <LineId Id="3" Count="23" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
   </POU>
 </TcPlcObject>
